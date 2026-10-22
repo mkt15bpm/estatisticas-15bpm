@@ -1,5 +1,5 @@
 #define MyAppName "ESTATÍSTICAS 15ª BPM"
-#define MyAppVersion "1.1.7"
+#define MyAppVersion "1.1.8"
 #define MyAppExeName "Estatisticas15BPM.exe"
 
 [Setup]
@@ -9,7 +9,7 @@ AppVersion={#MyAppVersion}
 DefaultDirName={autopf}\Estatisticas15BPM
 DefaultGroupName={#MyAppName}
 OutputDir=..\outputs
-OutputBaseFilename=Instalador_Estatisticas15BPM_1.1.7
+OutputBaseFilename=Instalador_Estatisticas15BPM_1.1.8
 Compression=lzma2
 SolidCompression=yes
 PrivilegesRequired=admin
@@ -36,4 +36,3 @@ function InitializeSetup(): Boolean;
 begin
   Result := True;
 end;
-
