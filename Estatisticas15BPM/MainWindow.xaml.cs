@@ -130,7 +130,9 @@ public partial class MainWindow : Window
         };
         static string Cell(string value) => value.Replace("\t", " ").Replace("\r", " ").Replace("\n", " ").Trim();
         var data = DateTime.TryParse(tco.Data, out var dataFato) ? dataFato.ToString("dd/MM/yyyy") : tco.Data;
-        Clipboard.SetText(string.Join("\t", new[] { Cell(cidade), Cell(data), Cell(tco.Hora), Cell(tco.Numero), Cell(tco.Naturezas), Cell(tco.Guarnicao), "1" }));
+        // O apóstrofo instrui o Excel a manter a numeração como texto e não é exibido na célula.
+        var numeroPlanilha = "'" + Cell(tco.Numero);
+        Clipboard.SetText(string.Join("\t", new[] { Cell(cidade), Cell(data), Cell(tco.Hora), numeroPlanilha, Cell(tco.Naturezas), Cell(tco.Guarnicao), "1" }));
         MessageBox.Show("Informações copiadas. Selecione uma célula vazia na planilha e cole.", "Planilha", MessageBoxButton.OK, MessageBoxImage.Information);
     }
     private void ViewOther_Click(object sender, RoutedEventArgs e) { if (((FrameworkElement)sender).Tag is long id) ShowOther(id); }
