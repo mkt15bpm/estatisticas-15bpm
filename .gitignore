@@ -1,0 +1,22 @@
+# Compilação e empacotamento
+[Bb]in/
+[Oo]bj/
+publish/
+outputs/
+work/
+tmp/
+
+# Bancos de dados, backups e arquivos locais sensíveis
+*.db
+*.db-shm
+*.db-wal
+*.bkp15
+BancoAtivo.txt
+
+# Pacotes locais
+*.zip
+
+# Ambiente de desenvolvimento
+.vs/
+*.user
+*.suo

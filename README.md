@@ -22,4 +22,3 @@ dotnet publish .\Estatisticas15BPM\Estatisticas15BPM.csproj -c Release -r win-x6
 ```
 
 O artefato é criado em `outputs\Instalador_Estatisticas15BPM.exe`.
-

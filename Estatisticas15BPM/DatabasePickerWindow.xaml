@@ -1,0 +1,6 @@
+<Window x:Class="Estatisticas15BPM.DatabasePickerWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Bancos de dados encontrados" Width="600" Height="380" WindowStartupLocation="CenterOwner">
+ <DockPanel Margin="20"><TextBlock DockPanel.Dock="Top" Text="Escolha o banco que deseja utilizar. Bancos antigos não serão apagados." TextWrapping="Wrap" Margin="0,0,0,14"/>
+  <ListBox x:Name="DatabaseList" DisplayMemberPath="DisplayName"/>
+  <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0"><Button Content="Usar banco selecionado" Click="Use_Click" Padding="14,7" Margin="0,0,8,0"/><Button Content="Cancelar" IsCancel="True" Padding="14,7"/></StackPanel>
+ </DockPanel>
+</Window>
