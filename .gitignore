@@ -20,3 +20,5 @@ BancoAtivo.txt
 .vs/
 *.user
 *.suo
+.dotnet-home/
+.nuget-packages/
