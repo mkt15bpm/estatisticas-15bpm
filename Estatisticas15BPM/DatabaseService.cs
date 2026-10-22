@@ -208,9 +208,40 @@ public sealed class DatabaseService
     public void CreateOther(string numero,string quartel,DateTime data,string hora,string natureza,IEnumerable<Policial> guarnicao,string material,string observacao,UserSession user)
     { using var db=Connect();using var tx=db.BeginTransaction();using var c=db.CreateCommand();c.Transaction=tx;c.CommandText="INSERT INTO OutrasOcorrencias(Numero,Quartel,DataFato,HoraFato,Natureza,MaterialApreendido,Observacao,CriadoEm,CriadoPor) VALUES($n,$q,$d,$h,$t,$m,$o,$c,$u); SELECT last_insert_rowid();";c.Parameters.AddWithValue("$n",numero);c.Parameters.AddWithValue("$q",quartel);c.Parameters.AddWithValue("$d",data.ToString("yyyy-MM-dd"));c.Parameters.AddWithValue("$h",hora);c.Parameters.AddWithValue("$t",natureza);c.Parameters.AddWithValue("$m",material);c.Parameters.AddWithValue("$o",observacao);c.Parameters.AddWithValue("$c",DateTime.Now.ToString("O"));c.Parameters.AddWithValue("$u",user.Login);var id=(long)c.ExecuteScalar()!;foreach(var person in guarnicao){using var g=db.CreateCommand();g.Transaction=tx;g.CommandText="INSERT OR IGNORE INTO OutrasGuarnicao(OcorrenciaId,UsuarioId) VALUES($id,$usuario)";g.Parameters.AddWithValue("$id",id);g.Parameters.AddWithValue("$usuario",person.Id);g.ExecuteNonQuery();}tx.Commit();Log(user,"OUTRA OCORRÊNCIA",$"Ocorrência {numero} cadastrada."); }
     public TcoEdicao? GetTcoForEdit(long id)
-    { using var db=Connect();using var c=db.CreateCommand();c.CommandText="SELECT Id,Numero,Quartel,Origem,DataFato,HoraFato,IFNULL(Observacao,''),CriadoEm,CriadoPor,Status FROM Tcos WHERE Id=$id";c.Parameters.AddWithValue("$id",id);using var r=c.ExecuteReader();if(!r.Read())return null;var n=GetTcoNaturezas(db,id);var g=GetTcoGuarnicao(db,id);return new TcoEdicao(r.GetInt64(0),r.GetString(1),r.GetString(2),r.GetString(3),DateTime.Parse(r.GetString(4)),r.GetString(5),r.GetString(6),r.GetString(7),r.GetString(8),r.GetString(9),n,g); }
+    {
+        using var db=Connect();
+        long recordId; string numero, quartel, origem, hora, observacao, criadoEm, criadoPor, status; DateTime data;
+        using (var c=db.CreateCommand())
+        {
+            c.CommandText="SELECT Id,Numero,Quartel,Origem,DataFato,HoraFato,IFNULL(Observacao,''),CriadoEm,CriadoPor,Status FROM Tcos WHERE Id=$id";
+            c.Parameters.AddWithValue("$id",id);
+            using var r=c.ExecuteReader();
+            if(!r.Read())return null;
+            recordId=r.GetInt64(0); numero=r.GetString(1); quartel=r.GetString(2); origem=r.GetString(3);
+            data=DateTime.Parse(r.GetString(4)); hora=r.GetString(5); observacao=r.GetString(6);
+            criadoEm=r.GetString(7); criadoPor=r.GetString(8); status=r.GetString(9);
+        }
+        var naturezas=GetTcoNaturezas(db,recordId);
+        var guarnicao=GetTcoGuarnicao(db,recordId);
+        return new TcoEdicao(recordId,numero,quartel,origem,data,hora,observacao,criadoEm,criadoPor,status,naturezas,guarnicao);
+    }
     public OcorrenciaEdicao? GetOtherForEdit(long id)
-    { using var db=Connect();using var c=db.CreateCommand();c.CommandText="SELECT Id,Numero,Quartel,DataFato,HoraFato,Natureza,IFNULL(MaterialApreendido,''),IFNULL(Observacao,''),CriadoEm,CriadoPor,Status FROM OutrasOcorrencias WHERE Id=$id";c.Parameters.AddWithValue("$id",id);using var r=c.ExecuteReader();if(!r.Read())return null;return new OcorrenciaEdicao(r.GetInt64(0),r.GetString(1),r.GetString(2),DateTime.Parse(r.GetString(3)),r.GetString(4),r.GetString(5),r.GetString(6),r.GetString(7),r.GetString(8),r.GetString(9),r.GetString(10),GetOtherGuarnicao(db,id)); }
+    {
+        using var db=Connect();
+        long recordId; string numero, quartel, hora, natureza, material, observacao, criadoEm, criadoPor, status; DateTime data;
+        using (var c=db.CreateCommand())
+        {
+            c.CommandText="SELECT Id,Numero,Quartel,DataFato,HoraFato,Natureza,IFNULL(MaterialApreendido,''),IFNULL(Observacao,''),CriadoEm,CriadoPor,Status FROM OutrasOcorrencias WHERE Id=$id";
+            c.Parameters.AddWithValue("$id",id);
+            using var r=c.ExecuteReader();
+            if(!r.Read())return null;
+            recordId=r.GetInt64(0); numero=r.GetString(1); quartel=r.GetString(2); data=DateTime.Parse(r.GetString(3));
+            hora=r.GetString(4); natureza=r.GetString(5); material=r.GetString(6); observacao=r.GetString(7);
+            criadoEm=r.GetString(8); criadoPor=r.GetString(9); status=r.GetString(10);
+        }
+        var guarnicao=GetOtherGuarnicao(db,recordId);
+        return new OcorrenciaEdicao(recordId,numero,quartel,data,hora,natureza,material,observacao,criadoEm,criadoPor,status,guarnicao);
+    }
     public bool CanEdit(string criadoEm,string criadoPor,UserSession user) => user.Role=="ADMINISTRADOR" || (user.Login==criadoPor && DateTime.TryParse(criadoEm,out var at) && DateTime.Now<=at.AddHours(24));
     public void UpdateTco(TcoEdicao old,string numero,string quartel,string origem,DateTime data,string hora,IEnumerable<Natureza> naturezas,IEnumerable<Policial> guarnicao,string observacao,UserSession user)
     { using var db=Connect();using var tx=db.BeginTransaction();using var c=db.CreateCommand();c.Transaction=tx;c.CommandText="UPDATE Tcos SET Numero=$n,Quartel=$q,Origem=$o,DataFato=$d,HoraFato=$h,Observacao=$x WHERE Id=$id";c.Parameters.AddWithValue("$n",numero);c.Parameters.AddWithValue("$q",quartel);c.Parameters.AddWithValue("$o",origem);c.Parameters.AddWithValue("$d",data.ToString("yyyy-MM-dd"));c.Parameters.AddWithValue("$h",hora);c.Parameters.AddWithValue("$x",observacao);c.Parameters.AddWithValue("$id",old.Id);c.ExecuteNonQuery();ReplaceTcoLinks(db,tx,old.Id,naturezas,guarnicao);History(db,tx,"TCO",old.Id,user,"EDIÇÃO",$"TCO {numero} alterado.");tx.Commit();Log(user,"TCO",$"TCO {numero} alterado."); }
@@ -417,3 +448,4 @@ public sealed record ParticipacaoResumo(string Tipo,string Numero,string DataFat
 public sealed record StorageResumo(long Usado,long Disponivel,long Total);
 public sealed record DashboardQuartelResumo(string Quartel,long Quantidade);
 public sealed record DashboardRegistroResumo(long Id,string Tipo,string Numero,string Data,string Hora,string Quartel,string Natureza,string Guarnicao);
+
